@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merazul248 - নেটওয়ার্ক সিস্টেম (ফিক্সড)</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f5f5f5; }
+.app { max-width: 100%; margin: 0 auto; min-height: 100vh; }
+
+.hidden { display: none !important; }
+
+/* DEBUG CONSOLE */
+.debug-console { 
+  position: fixed; 
+  bottom: 10px; 
+  right: 10px; 
+  background: #1e1e1e; 
+  color: #0ff; 
+  padding: 10px; 
+  border-radius: 5px; 
+  font-size: 0.8rem; 
+  max-width: 300px; 
+  max-height: 100px;
+  overflow-y: auto;
+  z-index: 9999;
+  border: 2px solid #0ff;
+  cursor: pointer;
+}
+
+.debug-btn { 
+  position: fixed; 
+  bottom: 10px; 
+  left: 10px; 
+  background: #1e7e2f; 
+  color: white; 
+  padding: 10px 15px; 
+  border-radius: 5px; 
+  cursor: pointer; 
+  font-weight: bold;
+  border: none;
+  z-index: 9999;
+}
+
+/* AUTH PAGE */
+.auth-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1e7e2f 0%, #0d5a1f 100%); padding: 20px; }
+.auth-container { max-width: 480px; width: 100%; }
+.auth-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.auth-box h1 { color: #1e7e2f; margin-bottom: 10px; text-align: center; font-size: 2rem; }
+.auth-box .subtitle { text-align: center; color: #666; margin-bottom: 20px; font-size: 0.9rem; }
+.auth-box .ref-info { background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #1e7e2f; border-left: 4px solid #1e7e2f; }
+.auth-box .ref-info h4 { margin-bottom: 8px; }
+.auth-box .ref-info p { font-size: 0.9rem; }
+
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; color: #1e7e2f; font-weight: bold; margin-bottom: 5px; }
+.form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #1e7e2f; border-radius: 8px; font-size: 1rem; font-family: inherit; }
+.form-group input:focus { outline: none; border-color: #ffd700; }
+
+.btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: all 0.3s; }
+.btn-primary { background: #1e7e2f; color: white; }
+.btn-primary:hover { background: #0d5a1f; }
+.btn-secondary { background: white; color: #1e7e2f; border: 2px solid #1e7e2f; margin-top: 10px; }
+
+.error { color: #d32f2f; font-size: 0.9rem; margin-top: 5px; display: none; background: #ffebee; padding: 10px; border-radius: 5px; }
+
+.success { color: #1e7e2f; font-size: 0.9rem; margin-top: 5px; display: none; background: #e8f5e9; padding: 10px; border-radius: 5px; }
+
+.toggle-text { text-align: center; margin-top: 15px; color: #666; font-size: 0.9rem; }
+.toggle-text a { color: #1e7e2f; cursor: pointer; text-decoration: underline; font-weight: bold; }
+
+/* DASHBOARD PAGE */
+.dashboard-page { display: none; }
+.header { background: linear-gradient(135deg, #1e7e2f 0%, #0d5a1f 100%); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 1.5rem; }
+.header-btns { display: flex; gap: 10px; }
+.logout-btn, .admin-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+.logout-btn:hover, .admin-btn:hover { background: rgba(255,255,255,0.3); }
+
+.content { max-width: 480px; margin: 0 auto; padding: 15px; padding-bottom: 120px; }
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.stat-card { background: linear-gradient(135deg, #1e7e2f 0%, #0d5a1f 100%); color: white; padding: 20px; border-radius: 12px; border: 3px solid #ffd700; text-align: center; }
+.stat-card h3 { font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px; }
+.stat-card .amount { font-size: 1.6rem; font-weight: bold; color: #ffd700; }
+
+.card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; border-left: 5px solid #1e7e2f; }
+.card h3 { color: #1e7e2f; margin-bottom: 8px; }
+.card p { color: #666; margin: 5px 0; font-size: 0.9rem; }
+
+.btn-action { background: #1e7e2f; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+.btn-action:hover { background: #0d5a1f; }
+
+.success-msg { background: #e8f5e9; color: #1e7e2f; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: none; font-weight: bold; }
+
+.network-item { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #1e7e2f; }
+.network-item h4 { color: #1e7e2f; margin-bottom: 5px; }
+.network-item p { color: #666; font-size: 0.9rem; margin: 2px 0; }
+
+/* ADMIN PAGE */
+.admin-page { display: none; }
+.admin-header { background: linear-gradient(135deg, #1e7e2f 0%, #0d5a1f 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+.admin-header h2 { font-size: 1.8rem; }
+
+.admin-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+.admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+.stat-box { background: white; padding: 20px; border-radius: 12px; border-left: 5px solid #1e7e2f; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.stat-box h3 { font-size: 2rem; color: #1e7e2f; margin-bottom: 5px; }
+.stat-box p { color: #666; }
+
+.admin-search { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+.admin-search input { width: 100%; padding: 12px; border: 2px solid #1e7e2f; border-radius: 8px; font-size: 1rem; }
+
+.admin-list { background: white; border-radius: 12px; overflow-x: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.list-header { background: #1e7e2f; color: white; padding: 15px; display: grid; grid-template-columns: 2fr 2fr 1fr 1.5fr 1.5fr; gap: 10px; font-weight: bold; }
+.list-item { padding: 15px; border-bottom: 1px solid #eee; display: grid; grid-template-columns: 2fr 2fr 1fr 1.5fr 1.5fr; gap: 10px; align-items: center; }
+
+@media (max-width: 768px) {
+  .list-header, .list-item { grid-template-columns: 1fr; }
+  .admin-stats { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- DEBUG CONSOLE -->
+<button class="debug-btn" onclick="showDebugInfo()">🔧 ডিবাগ তথ্য</button>
+<div class="debug-console" id="debugConsole" style="display: none;"></div>
+
+<div class="app">
+  
+  <!-- AUTH PAGE -->
+  <div class="auth-page" id="authPage">
+    <div class="auth-container">
+      <div class="auth-box">
+        <h1>🚀 Merazul248</h1>
+        <p class="subtitle">প্রফেশনাল নেটওয়ার্ক সিস্টেম</p>
+        
+        <!-- LOGIN FORM -->
+        <div id="loginForm">
+          <h2 style="color: #1e7e2f; margin-bottom: 20px; font-size: 1.3rem; text-align: center;">লগইন করুন</h2>
+          
+          <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 0.9rem;">
+            <strong>টেস্ট অ্যাকাউন্ট:</strong><br>
+            ইউজারনেম: <code>admin</code><br>
+            পাসওয়ার্ড: <code>123456</code>
+          </div>
+          
+          <div class="form-group">
+            <label>ইমেইল / ইউজারনেম</label>
+            <input type="text" id="loginEmail" placeholder="admin">
+          </div>
+          <div class="form-group">
+            <label>পাসওয়ার্ড</label>
+            <input type="password" id="loginPassword" placeholder="123456">
+          </div>
+          <div class="error" id="loginError"></div>
+          <div class="success" id="loginSuccess"></div>
+          <button class="btn btn-primary" onclick="login()">🔓 লগইন করুন</button>
+          
+          <div class="toggle-text">
+            নতুন ইউজার? <a onclick="toggleAuthForm()">এখানে সাইন আপ করুন</a>
+          </div>
+        </div>
+        
+        <!-- SIGNUP FORM -->
+        <div id="signupForm" style="display: none;">
+          <h2 style="color: #1e7e2f; margin-bottom: 20px; font-size: 1.3rem; text-align: center;">নতুন অ্যাকাউন্ট তৈরি করুন</h2>
+          
+          <div id="refInfo" class="ref-info" style="display: none;">
+            <h4>🤝 রেফার করা হচ্ছেন</h4>
+            <p id="refUserName"></p>
+            <p style="font-size: 0.85rem; margin-top: 8px;">আপনি এর নেটওয়ার্কে যুক্ত হবেন।</p>
+          </div>
+          
+          <div class="form-group">
+            <label>সম্পূর্ণ নাম</label>
+            <input type="text" id="signupName" placeholder="আপনার সম্পূর্ণ নাম">
+          </div>
+          <div class="form-group">
+            <label>ইমেইল</label>
+            <input type="email" id="signupEmail" placeholder="আপনার ইমেইল">
+          </div>
+          <div class="form-group">
+            <label>ইউজারনেম</label>
+            <input type="text" id="signupUsername" placeholder="ইউজারনেম">
+          </div>
+          <div class="form-group">
+            <label>পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label>
+            <input type="password" id="signupPassword" placeholder="123456">
+          </div>
+          <div class="form-group">
+            <label>ফোন নম্বর</label>
+            <input type="tel" id="signupPhone" placeholder="+8801329104167">
+          </div>
+          <div class="error" id="signupError"></div>
+          <button class="btn btn-primary" onclick="signup()">✅ অ্যাকাউন্ট তৈরি করুন</button>
+          
+          <div class="toggle-text">
+            আগে থেকেই অ্যাকাউন্ট আছে? <a onclick="toggleAuthForm()">লগইন করুন</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- DASHBOARD PAGE -->
+  <div class="dashboard-page" id="dashboardPage" style="max-width: 480px; margin: 0 auto;">
+    <div class="header">
+      <div>
+        <h1>Merazul248</h1>
+        <p id="userGreeting" style="font-size: 0.9rem; margin-top: 5px;">স্বাগতম!</p>
+      </div>
+      <div class="header-btns">
+        <button class="admin-btn" id="adminBtn" onclick="goToAdmin()">⚙️ অ্যাডমিন</button>
+        <button class="logout-btn" onclick="logout()">লগ আউট</button>
+      </div>
+    </div>
+    
+    <div class="content">
+      <div class="success-msg" id="successMsg"></div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>আমার টিম</h3>
+          <div class="amount" id="teamCount">०</div>
+        </div>
+        <div class="stat-card">
+          <h3>সরাসরি রেফার</h3>
+          <div class="amount" id="directRef">०</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h3>🤝 আমার রেফারেল লিংক</h3>
+        <p id="referralLink" style="word-break: break-all; background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 0.85rem;">লোড হচ্ছে...</p>
+        <button class="btn-action" onclick="copyRefLink()">📋 লিংক কপি করুন</button>
+      </div>
+      
+      <div class="card">
+        <h3>👥 আমার নেটওয়ার্ক</h3>
+        <div id="networkList">লোড হচ্ছে...</div>
+      </div>
+      
+      <div class="card">
+        <h3>📞 যোগাযোগ করুন</h3>
+        <p>📱 <a href="tel:+8801329104167" style="color: #1e7e2f; font-weight: bold;">+8801329104167</a></p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ADMIN PAGE -->
+  <div class="admin-page" id="adminPage">
+    <div class="admin-header">
+      <div>
+        <h2>⚙️ অ্যাডমিন প্যানেল</h2>
+        <p style="margin-top: 10px; font-size: 0.9rem;">📱 +8801329104167</p>
+      </div>
+      <button class="btn btn-secondary" onclick="exitAdmin()" style="width: auto; padding: 10px 20px;">← ফিরে যান</button>
+    </div>
+    
+    <div class="admin-container">
+      <!-- STATS -->
+      <div class="admin-stats">
+        <div class="stat-box">
+          <h3 id="totalUsersCount">०</h3>
+          <p>মোট ইউজার</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="directRefCount">०</h3>
+          <p>সরাসরি রেফার</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="levelCount">०</h3>
+          <p>মোট লেভেল</p>
+        </div>
+      </div>
+      
+      <!-- SEARCH -->
+      <div class="admin-search">
+        <input type="text" id="adminSearch" placeholder="🔍 ইউজার খুঁজুন..." onkeyup="searchUsers()">
+      </div>
+      
+      <!-- USERS LIST -->
+      <div class="admin-list">
+        <div class="list-header">
+          <div>নাম</div>
+          <div>ইমেইল / ইউজারনেম</div>
+          <div>রেফারার</div>
+          <div>টিম সাইজ</div>
+          <div>তারিখ</div>
+        </div>
+        <div id="adminUsersList">লোড হচ্ছে...</div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<script>
+let currentUser = null;
+let allUsers = [];
+let debugMode = false;
+
+// DEBUG FUNCTION
+function showDebugInfo() {
+  debugMode = !debugMode;
+  const console = document.getElementById('debugConsole');
+  
+  if (!debugMode) {
+    console.style.display = 'none';
+    return;
+  }
+  
+  const stored = localStorage.getItem('merazul_users');
+  if (stored) {
+    try {
+      const users = JSON.parse(stored);
+      console.style.display = 'block';
+      console.innerHTML = `<strong>ডিবাগ তথ্য:</strong><br>
+        মোট ইউজার: ${users.length}<br>
+        <br><strong>Admin ডেটা:</strong><br>
+        ${users[0] ? `
+          নাম: ${users[0].name}<br>
+          ইমেইল: ${users[0].email}<br>
+          ইউজারনেম: ${users[0].username}<br>
+          পাসওয়ার্ড: ${users[0].password}<br>
+          প্রকৃত পাস: 123456
+        ` : 'নেই'}
+      `;
+    } catch (e) {
+      console.style.display = 'block';
+      console.innerHTML = 'Error: ' + e.message;
+    }
+  } else {
+    console.style.display = 'block';
+    console.innerHTML = 'কোনো ডেটা নেই। Init এ ক্লিক করুন।';
+  }
+}
+
+// INITIALIZE
+function init() {
+  const stored = localStorage.getItem('merazul_users');
+  if (!stored) {
+    const adminUser = {
+      id: 1,
+      name: 'মেরাজুল ইসলাম (Admin)',
+      email: 'admin@merazul248.com',
+      username: 'admin',
+      password: '123456', // সরাসরি সংরক্ষণ (পরীক্ষার জন্য)
+      phone: '+8801329104167',
+      isAdmin: true,
+      referralCode: 'ADMIN001',
+      referrerId: null,
+      createdDate: new Date().toLocaleString('bn-BD'),
+      directReferrals: []
+    };
+    localStorage.setItem('merazul_users', JSON.stringify([adminUser]));
+    alert('✅ ডেটা সফলভাবে সেট হয়েছে!\n\nটেস্ট করুন:\nইউজারনেম: admin\nপাসওয়ার্ড: 123456');
+  }
+  checkReferralCode();
+}
+
+// CHECK REFERRAL CODE
+function checkReferralCode() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const refCode = urlParams.get('ref');
+  
+  if (refCode) {
+    allUsers = JSON.parse(localStorage.getItem('merazul_users') || '[]');
+    const referrer = allUsers.find(u => u.referralCode === refCode);
+    if (referrer) {
+      document.getElementById('refInfo').style.display = 'block';
+      document.getElementById('refUserName').textContent = '👤 ' + referrer.name + ' আপনাকে আমন্ত্রণ জানিয়েছেন';
+      sessionStorage.setItem('referrerId', referrer.id);
+    }
+  }
+}
+
+// AUTH FUNCTIONS
+function toggleAuthForm() {
+  document.getElementById('loginForm').classList.toggle('hidden');
+  document.getElementById('signupForm').classList.toggle('hidden');
+}
+
+function signup() {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const username = document.getElementById('signupUsername').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const phone = document.getElementById('signupPhone').value.trim();
+  
+  const error = document.getElementById('signupError');
+  error.style.display = 'none';
+  
+  if (!name || !email || !username || !password) {
+    error.textContent = '❌ সব ফিল্ড পূরণ করুন!';
+    error.style.display = 'block';
+    return;
+  }
+  
+  if (password.length < 6) {
+    error.textContent = '❌ পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে!';
+    error.style.display = 'block';
+    return;
+  }
+  
+  allUsers = JSON.parse(localStorage.getItem('merazul_users') || '[]');
+  if (allUsers.find(u => u.email === email || u.username === username)) {
+    error.textContent = '❌ এই ইমেইল বা ইউজারনেম ইতিমধ্যে ব্যবহার করা হয়েছে!';
+    error.style.display = 'block';
+    return;
+  }
+  
+  // GET REFERRER
+  let referrerId = null;
+  const storedReferrerId = sessionStorage.getItem('referrerId');
+  if (storedReferrerId) {
+    referrerId = parseInt(storedReferrerId);
+  }
+  
+  const refCode = 'REF' + Math.random().toString(36).substr(2, 9).toUpperCase();
+  const newUser = {
+    id: Date.now(),
+    name,
+    email,
+    username,
+    password: password, // সরাসরি সংরক্ষণ
+    phone,
+    isAdmin: false,
+    referralCode: refCode,
+    referrerId: referrerId || 1,
+    createdDate: new Date().toLocaleString('bn-BD'),
+    directReferrals: []
+  };
+  
+  allUsers.push(newUser);
+  
+  // ADD TO REFERRER'S NETWORK
+  if (referrerId) {
+    const referrer = allUsers.find(u => u.id === referrerId);
+    if (referrer && !referrer.directReferrals.includes(newUser.id)) {
+      referrer.directReferrals.push(newUser.id);
+    }
+  }
+  
+  localStorage.setItem('merazul_users', JSON.stringify(allUsers));
+  sessionStorage.removeItem('referrerId');
+  
+  currentUser = newUser;
+  showDashboard();
+}
+
+function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  
+  const error = document.getElementById('loginError');
+  const success = document.getElementById('loginSuccess');
+  error.style.display = 'none';
+  success.style.display = 'none';
+  
+  if (!email || !password) {
+    error.textContent = '❌ ইমেইল এবং পাসওয়ার্ড লিখুন!';
+    error.style.display = 'block';
+    return;
+  }
+  
+  allUsers = JSON.parse(localStorage.getItem('merazul_users') || '[]');
+  
+  // DEBUG: পাসওয়ার্ড চেক
+  console.log('Checking login:', email, password);
+  console.log('Available users:', allUsers.length);
+  allUsers.forEach((u, i) => {
+    console.log(i, ':', u.username, '/', u.email, '=> pass:', u.password);
+  });
+  
+  const user = allUsers.find(u => {
+    return (u.email === email || u.username === email) && u.password === password;
+  });
+  
+  if (!user) {
+    error.textContent = '❌ ইমেইল/ইউজারনেম বা পাসওয়ার্ড ভুল!';
+    error.style.display = 'block';
+    console.log('Login failed for:', email);
+    return;
+  }
+  
+  currentUser = user;
+  success.textContent = '✅ লগইন সফল! রিডাইরেক্ট হচ্ছে...';
+  success.style.display = 'block';
+  
+  setTimeout(() => {
+    showDashboard();
+  }, 1000);
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById('authPage').style.display = 'flex';
+  document.getElementById('dashboardPage').style.display = 'none';
+  document.getElementById('adminPage').style.display = 'none';
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('signupForm').style.display = 'none';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+}
+
+function showDashboard() {
+  document.getElementById('authPage').style.display = 'none';
+  document.getElementById('dashboardPage').style.display = 'block';
+  document.getElementById('adminPage').style.display = 'none';
+  
+  document.getElementById('userGreeting').textContent = '👋 স্বাগতম, ' + currentUser.name + '!';
+  document.getElementById('adminBtn').style.display = currentUser.isAdmin ? 'block' : 'none';
+  
+  // DISPLAY STATS
+  const teamSize = getTeamSize(currentUser.id);
+  document.getElementById('teamCount').textContent = teamSize;
+  document.getElementById('directRef').textContent = (currentUser.directReferrals || []).length;
+  
+  // DISPLAY REFERRAL LINK
+  const refLink = window.location.origin + window.location.pathname + '?ref=' + currentUser.referralCode;
+  document.getElementById('referralLink').textContent = refLink;
+  
+  // DISPLAY NETWORK
+  displayNetwork();
+}
+
+function getTeamSize(userId) {
+  let count = 0;
+  const user = allUsers.find(u => u.id === userId);
+  if (!user) return 0;
+  
+  const getDirect = (uid) => {
+    const u = allUsers.find(x => x.id === uid);
+    if (!u || !u.directReferrals) return 0;
+    let total = u.directReferrals.length;
+    u.directReferrals.forEach(rid => {
+      total += getDirect(rid);
+    });
+    return total;
+  };
+  
+  return getDirect(userId);
+}
+
+function displayNetwork() {
+  allUsers = JSON.parse(localStorage.getItem('merazul_users') || '[]');
+  const network = (currentUser.directReferrals || []).map(id => allUsers.find(u => u.id === id)).filter(u => u);
+  
+  if (network.length === 0) {
+    document.getElementById('networkList').innerHTML = '<p style="color: #999; text-align: center;">এখনো কেউ যুক্ত হয়নি। আপনার রেফারেল লিংক শেয়ার করুন!</p>';
+    return;
+  }
+  
+  document.getElementById('networkList').innerHTML = network.map(u => `
+    <div class="network-item">
+      <h4>👤 ${u.name}</h4>
+      <p>📧 ${u.email}</p>
+      <p>📅 ${u.createdDate}</p>
+    </div>
+  `).join('');
+}
+
+function copyRefLink() {
+  const refLink = window.location.origin + window.location.pathname + '?ref=' + currentUser.referralCode;
+  navigator.clipboard.writeText(refLink).then(() => {
+    showSuccess('✅ রেফারেল লিংক কপি হয়েছে!');
+  });
+}
+
+function goToAdmin() {
+  if (!currentUser.isAdmin) {
+    alert('❌ আপনি অ্যাডমিন নন!');
+    return;
+  }
+  document.getElementById('dashboardPage').style.display = 'none';
+  document.getElementById('adminPage').style.display = 'block';
+  loadAdminPanel();
+}
+
+function exitAdmin() {
+  document.getElementById('adminPage').style.display = 'none';
+  document.getElementById('dashboardPage').style.display = 'block';
+}
+
+function loadAdminPanel() {
+  allUsers = JSON.parse(localStorage.getItem('merazul_users') || '[]');
+  
+  let maxLevel = 0;
+  allUsers.forEach(u => {
+    let level = 1;
+    let referrerId = u.referrerId;
+    while (referrerId && referrerId !== 1) {
+      const ref = allUsers.find(x => x.id === referrerId);
+      if (!ref) break;
+      referrerId = ref.referrerId;
+      level++;
+    }
+    if (level > maxLevel) maxLevel = level;
+  });
+  
+  const adminUser = allUsers.find(u => u.isAdmin);
+  const directRefCount = adminUser ? (adminUser.directReferrals || []).length : 0;
+  
+  document.getElementById('totalUsersCount').textContent = allUsers.length;
+  document.getElementById('directRefCount').textContent = directRefCount;
+  document.getElementById('levelCount').textContent = maxLevel;
+  
+  displayAdminUsers(allUsers);
+}
+
+function displayAdminUsers(users) {
+  const list = document.getElementById('adminUsersList');
+  if (users.length === 0) {
+    list.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">কোনো ইউজার নেই</div>';
+    return;
+  }
+  
+  list.innerHTML = users.map(u => {
+    const referrer = allUsers.find(ref => ref.id === u.referrerId);
+    const teamSize = getTeamSize(u.id);
+    return `
+      <div class="list-item">
+        <div>
+          <strong>${u.name}</strong>
+        </div>
+        <div>
+          <div>${u.email}</div>
+          <div style="color: #999; font-size: 0.9rem;">@${u.username}</div>
+        </div>
+        <div style="text-align: center;">
+          <strong>${referrer ? referrer.name.substring(0, 10) : 'Admin'}</strong>
+        </div>
+        <div style="text-align: center;">
+          <strong>${teamSize}</strong>
+        </div>
+        <div style="text-align: center;">
+          <small>${u.createdDate}</small>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function searchUsers() {
+  const query = document.getElementById('adminSearch').value.toLowerCase();
+  const filtered = allUsers.filter(u => 
+    u.name.toLowerCase().includes(query) ||
+    u.email.toLowerCase().includes(query) ||
+    u.username.toLowerCase().includes(query)
+  );
+  displayAdminUsers(filtered);
+}
+
+function showSuccess(msg) {
+  const box = document.getElementById('successMsg');
+  box.textContent = msg;
+  box.style.display = 'block';
+  setTimeout(() => box.style.display = 'none', 3000);
+}
+
+// START
+init();
+</script>
+
+</body>
+</html>
